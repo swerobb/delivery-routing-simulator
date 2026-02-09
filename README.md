@@ -76,18 +76,18 @@ Packages are stored in a **custom hash table**:
 
 ---
 
-Project Context
+## Project Context
 
 
 The objective was to design a delivery system that:
 
-    Delivers all packages on time
-    Handles special delivery constraints
-    Keeps total mileage under a fixed limit
-    Allows status checks at any time during the simulation
+  - Delivers all packages on time
+  - Handles special delivery constraints
+  - Keeps total mileage under a fixed limit
+  - Allows status checks at any time during the simulation
 
 The focus of the project was on:
 
-    Algorithm design
-    Data structure implementation
-    Efficiency and correctness under constraints
+  - Algorithm design
+  - Data structure implementation
+  - Efficiency and correctness under constraints
