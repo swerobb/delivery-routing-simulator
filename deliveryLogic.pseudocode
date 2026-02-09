@@ -1,0 +1,153 @@
+FUNCTION nearest_neighbor_algorithm TAKES IN Distances and PackageIDs
+    BEGIN
+        CREATE a list called RouteList and ASSIGN it to start with the hub location 0
+        CREATE a list called Visited and ASSIGN all addresses FALSE
+        SET first location in Visited to TRUE
+        CREATE a variable DistanceTravelled and ASSIGN it to 0
+
+        FOR each package in PackageIDs but starting from the second
+            CREATE variable List and ASSIGN it to the last location in RouteList
+            CREATE a variable Nearest and ASSIGN it a value of None
+            ASSIGN MinDistance to the value infinity
+
+            FOR each location in Distances
+                IF the location has not been visited AND the distance from Last location
+                to that location is smaller than the current value of MinDistance THEN
+                    ASSIGN MinDistance to that distance
+                    ASSIGN Nearest to that location
+                ENDIF
+            ENDFOR
+
+            IF Nearest has a value of None THEN
+                EXIT the loop
+            ENDIF
+
+            ADD the next delivery stop identified by Nearest to RouteList
+            ASSIGN TRUE to the visited location for Nearest
+            INCREMENT DistanceTravelled by MinDistance
+        ENDFOR
+
+        CALCULATE the distance from the last stop back to the hub
+        INCREMENT DistanceTravelled by that amount
+        ADD the hub to the end of the RoutList
+
+        RETURN the full delivery route (RouteList) and
+        the total distance travelled (DistanceTravelled)
+    END
+ENDFUNCTION
+
+FUNCTION deliver_packages TAKES IN Truck, DistanceMatrix, PackageTable, AddressMap, Addresses
+    BEGIN
+        CREATE a variable HubIndex and ASSIGN it the value of 0
+        ASSIGN the trucks current location to the hub
+
+        CREATE a variable PendingIDs and ASSIGN it a list of all package IDs
+        assigned to this truck that exists in PackageTable
+        CREATE a variable EnRouteSet and ASSIGN it to FALSE
+
+        WHILE there are still IDs in the PendingIDs list
+            CREATE a variable HoldTime and ASSIGN it the time of 10:20 AM
+            CREATE an empty list named AvailableIDs
+            CREATE an empty list named HoldIDs
+
+            FOR each Package ID in PendingIDs list
+                GET the package data from PackageTable using packageID, ASSIGN it to variable Package
+                IF theres no data for package,
+                    THEN CONTINUE
+                ENDIF
+
+                IF the note for that package says "Wrong address" AND the
+                trucks current time is before the time of the variable HoldTime THEN
+                    ADD the package ID to the list HoldIDs
+                ELSE
+                    ADD the package ID to the list AvailableIDs
+                ENDIF
+            ENDFOR
+
+            IF there are no IDs available from the AvailableIDs list THEN CONTINUE
+            to next iteration of WHILE loop
+            ENDIF
+
+            IF there are no IDs in Hold list
+                EXIT
+            ENDIF
+
+            ASSIGN variable HoldTime to the the trucks current time
+            ASSIGN variable HubIndex to the trucks current location
+            ASSIGN the IDs in HoldIDs to the list AvailableIDs
+
+            CREATE a variable CurrentIndex and ASSIGN it the value of
+            the trucks current location
+
+            CREATE HELPER FUNCTION distance_to_package that TAKES IN package ids
+                BEGIN
+                    CREATE a variable named Package then ASSIGN it the the value of the package data
+                     found in PackageTable using the given package ID
+                    CREATE a variable named Index then ASSIGN that to the value of the address index
+                    found in AddressMap using the packages address or use the value in
+                    HubIndex if the address is not found
+                    RETURN the distance value from DistanceMatrix using the current truck location
+                END
+            ENDFUNCTION
+
+            CREATE variable NextID and ASSIGN it to the package in AvailableIDs with the smallest
+            value from the HELPER FUNCTION distance_to_package
+            CREATE variable NextPackage and ASSIGN it to the package table found
+            in PackageTable using the value of NextID
+            CREATE variable NextIndex and ASSIGN it to the value of the address
+            found in AddressMap using the address fron NextPackage or use the value in HubIndex
+
+            IF EnRouteSet is FALSE THEN
+                FOR each ID in PendingIDs
+                    GET the package data from the package table, ASSIGN that value to Package
+                    IF theres a package THEN UPDATE the packages status to "En Route"
+                    using the trucks current time
+                    ENDIF
+                ENDFOR
+                ASSIGN EnRouteSet to TRUE
+            ENDIF
+
+            CREATE a variable LegDistance and ASSIGN it to the distance value between
+            CurrentIndex and NextIndex from DistanceMatrix
+            BEGIN to simulate driving the truck and update its time
+            and mileage using the LegDistance
+
+            CREATE an empty list named DeliveredNow
+            FOR each package ID in the pending list
+                GET the package data from the package table and ASSIGN it to Package
+                IF theres no package data then ADD that package ID to DeliveredNow
+                ENDIF
+
+                GET the address index for that package from
+                AddressMap and ASSIGN it to variable PackageIndex
+                IF the packages address index does not match with NextIndex CONTINUE
+                ENDIF
+
+                IF the note says "Wrong address" ADD the trucks current time is before
+                HoldTime THEN CONTINUE
+                ENDIF
+
+                UPDATE the package status to "Delivered" using the trucks current time
+                ADD that package ID to the list DeliveredNow
+            ENDFOR
+
+            FOR each package ID that is in the list DeliveredNow
+                REMOVE that package ID from the Pending list
+            ENDFOR
+        ENDWHILE
+
+        IF the trucks current location is not the hub THEN
+            CREATE a variable LegDistance and ASSIGN it to the distance from the trucks
+            current location back to HubIndex
+            Simulate the truck returning to the hub using that LegDistance value
+        ENDIF
+    END
+ENDFUNCTION
+
+
+
+
+
+
+
+
